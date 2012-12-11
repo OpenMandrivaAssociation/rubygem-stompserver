@@ -1,0 +1,95 @@
+#!/bin/sh
+#
+# Author: Per Øyvind Karlsen <peroyvind@mandriva.org>
+#
+### BEGIN INIT INFO
+# Provides: stomp
+# Required-Start: $local_fs $remote_fs $network $syslog 
+# Required-Stop: $local_fs $remote_fs $network $syslog 
+# Default-Start: 3 4 5
+# Default-Stop: 0 1 6
+# Description: Stomp message queue processing server
+# Short-Description: Stomp server
+### END INIT INFO
+
+. /etc/init.d/functions
+
+NAME="stompserver"
+LOCK_FILE=/var/lock/subsys/${NAME}
+PID_FILE=/var/run/${NAME}/${NAME}.pid
+
+STOMPSERVER_CONFIG=/etc/${NAME}.conf
+STOMPSERVER_BIN=/usr/bin/${NAME}
+CMD="ruby ${STOMPSERVER_BIN} -C ${STOMPSERVER_CONFIG}"
+
+if [ ! -x ${STOMPSERVER_BIN} ]; then
+    [ "$1" = "stop" ] && exit 0
+    gprintf "%s needs to exist and be executable\n" "${STOMPSERVER_BIN}"
+    exit 5
+fi
+
+if [ ! -r ${STOMPSERVER_CONFIG} ]; then
+    [ "$1" = "stop" ] && exit 0
+    gprintf "%s needs to exist and be readable\n" "${STOMPSERVER_CONFIG}"
+    exit 6
+fi
+
+start()
+{
+	gprintf "Starting %s: " "${NAME}"
+	daemon --pidfile=${PID_FILE} --user ${NAME} "${CMD} &> /dev/null"
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch ${LOCK_FILE}
+	return $RETVAL
+}
+
+stop()
+{
+	gprintf "Shutting down %s: " "${NAME}"
+	killproc -p ${PID_FILE}
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && rm -f ${LOCK_FILE}
+	return $RETVAL
+}
+
+rh_status()
+{
+	status -p ${PID_FILE} ${NAME}
+
+	RETVAL=$?
+	return $RETVAL
+}
+
+rh_status_q()
+{
+	return $(rh_status >/dev/null 2>&1)
+}
+
+case "$1" in
+    start)
+	rh_status_q && exit 0
+	$1
+        ;;
+    stop)
+	$1
+        ;;
+    restart)
+	stop
+	start
+        ;;
+    condrestart|try-restart)
+	rh_status_q || exit 0
+	stop
+	start
+        ;;
+    status)
+	rh_status
+        ;;
+  *)
+        gprintf "Usage: %s {start|stop|status|restart|condrestart}\n" $0
+        RETVAL=2
+	;;
+esac
+exit $RETVAL

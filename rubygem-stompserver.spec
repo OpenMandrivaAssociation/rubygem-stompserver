@@ -72,3 +72,17 @@ rm -rf %{buildroot}
 %attr(700,%{oname},%{oname}) %dir %{_localstatedir}/lib/%{oname}/.queue
 %attr(700,%{oname},%{oname}) %dir %{_localstatedir}/log/%{oname}
 %attr(700,%{oname},%{oname}) %dir %{_localstatedir}/run/%{oname}
+
+
+%changelog
+* Sat Sep 18 2010 Per Øyvind Karlsen <peroyvind@mandriva.org> 0.9.9-2mdv2011.0
++ Revision: 579452
+- add service functionality
+
+* Sat Sep 18 2010 Per Øyvind Karlsen <peroyvind@mandriva.org> 0.9.9-1mdv2011.0
++ Revision: 579429
+- import rubygem-stompserver
+
+
+* Fri Nov 20 2009 Per Øyvind Karlsen <peroyvind@mandriva.org> 0.9.9-1
+- initial release
