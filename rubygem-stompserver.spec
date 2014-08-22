@@ -3,14 +3,18 @@
 Summary:	A basic message queue processing server
 Name:		rubygem-%{oname}
 Version:	0.9.9
-Release:	%mkrel 2
+Release:	5
 License:	MIT
 Group:		Development/Ruby
 URL:		http://%{oname}.rubyforge.org/
 Source0:	http://gems.rubyforge.org/gems/%{oname}-%{version}.gem
-Source1:	%{oname}.init
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
+Source1:	%{oname}.service
 BuildRequires:	ruby-RubyGems
+BuildRequires: systemd
+Requires(pre): systemd
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
 BuildArch:	noarch
 
 %description
@@ -22,12 +26,12 @@ queue monitoring, and basic authentication.
 %build
 
 %install
-rm -rf %{buildroot}
 gem install -E -n %{buildroot}%{_bindir} --local --install-dir %{buildroot}/%{ruby_gemdir} --force %{SOURCE0}
 
 rm -rf %{buildroot}%{ruby_gemdir}/{cache,gems/%{oname}-%{version}/ext}
 
-install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/%{oname}
+install -d %{buildroot}%{_unitdir}
+install -D -p -m 0755 %{SOURCE1} %{buildroot}%{_unitdir}/%{oname}.service
 install -m644 %{buildroot}%{ruby_gemdir}/gems/%{oname}-%{version}/config/%{oname}.conf -D %{buildroot}%{_sysconfdir}/%{oname}.conf
 sed	-e 's#:daemon:.*#:daemon: true#g' \
 	-e 's#:working_dir:.*#:working_dir: %{_localstatedir}/lib/%{oname}#g' \
@@ -44,27 +48,27 @@ install -d %{buildroot}%{_localstatedir}/lib/%{oname}/.queue
 install -d %{buildroot}%{_var}/{log,run}/%{oname}
 
 %pre
+%systemd_pre %{oname}.service
 %_pre_useradd %{oname} %{_localstatedir}/lib/%{oname} /sbin/nologin
 
 %post
-%{_post_service %{oname}}
+%systemd_post %{oname}.service
 
 %preun
-%{_preun_service %{oname}}
+%systemd_preun %{oname}.service
 
 %postun
+%systemd_postun_with_restart %{oname}.service
 %_postun_userdel %{oname}
 
 %clean
-rm -rf %{buildroot}
 
 %files
-%defattr(-,root,root)
 %doc %{ruby_gemdir}/doc/%{oname}-%{version}
 %{ruby_gemdir}/gems/%{oname}-%{version}
 %{ruby_gemdir}/specifications/%{oname}-%{version}.gemspec
 %{_bindir}/%{oname}
-%{_initrddir}/%{oname}
+%{_unitdir}/%{oname}.service
 %config(noreplace) %{_sysconfdir}/%{oname}.conf
 %attr(700,%{oname},%{oname}) %dir %{_localstatedir}/lib/%{oname}
 %attr(700,%{oname},%{oname}) %dir %{_localstatedir}/lib/%{oname}/etc
@@ -72,17 +76,3 @@ rm -rf %{buildroot}
 %attr(700,%{oname},%{oname}) %dir %{_localstatedir}/lib/%{oname}/.queue
 %attr(700,%{oname},%{oname}) %dir %{_localstatedir}/log/%{oname}
 %attr(700,%{oname},%{oname}) %dir %{_localstatedir}/run/%{oname}
-
-
-%changelog
-* Sat Sep 18 2010 Per Øyvind Karlsen <peroyvind@mandriva.org> 0.9.9-2mdv2011.0
-+ Revision: 579452
-- add service functionality
-
-* Sat Sep 18 2010 Per Øyvind Karlsen <peroyvind@mandriva.org> 0.9.9-1mdv2011.0
-+ Revision: 579429
-- import rubygem-stompserver
-
-
-* Fri Nov 20 2009 Per Øyvind Karlsen <peroyvind@mandriva.org> 0.9.9-1
-- initial release
