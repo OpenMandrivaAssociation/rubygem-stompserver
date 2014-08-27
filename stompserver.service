@@ -4,14 +4,9 @@ Description=Stomp message queue processing server
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/bin/echo -n "Starting stompserver: "
-ExecStart=daemon --pidfile=/var/run/stompserver/stompserver.pid --user stompserver "ruby /usr/bin/stompserver -C /etc/stompserver.conf &> /dev/null"
-ExecStart=/bin/echo
+ExecStart=ruby /usr/bin/stompserver -C /etc/stompserver.conf &> /dev/null
 ExecStart=/bin/touch /var/lock/subsys/stompserver
 
-ExecStop=/bin/echo -n "Stopping stompserver: "
-ExecStop=/bin/killproc -p /var/run/stompserver/stompserver.pid
-ExecStop=/bin/echo
 ExecStop=/bin/rm -f /var/lock/subsys/stompserver
 
 [Install]
