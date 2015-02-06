@@ -3,7 +3,7 @@
 Summary:	A basic message queue processing server
 Name:		rubygem-%{oname}
 Version:	0.9.9
-Release:	6
+Release:	7
 License:	MIT
 Group:		Development/Ruby
 URL:		http://%{oname}.rubyforge.org/
