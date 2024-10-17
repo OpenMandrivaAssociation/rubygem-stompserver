@@ -6,7 +6,7 @@ Version:	0.9.9
 Release:	7
 License:	MIT
 Group:		Development/Ruby
-URL:		http://%{oname}.rubyforge.org/
+URL:		https://%{oname}.rubyforge.org/
 Source0:	http://gems.rubyforge.org/gems/%{oname}-%{version}.gem
 Source1:	%{oname}.service
 BuildRequires:	ruby-RubyGems
